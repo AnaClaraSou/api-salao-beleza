@@ -1,0 +1,30 @@
+{
+  "name": "api-salao-beleza",
+  "version": "1.0.0",
+  "description": "API para sistema de salão de beleza",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "criar-admin": "node src/criarAdmin.js",
+    "verificar": "node src/verificar-tudo.js"
+  },
+  "keywords": [
+    "salao",
+    "beleza",
+    "agendamento",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
