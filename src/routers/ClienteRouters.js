@@ -128,51 +128,41 @@ router.put("/clientes/:id", async (req, res) => {
 
 //DELETE DELETAR UM CLIENTE
 router.delete("/clientes/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        // ANTIGO MySQL:
-        // const [result] = await db.execute(
-        //     "DELETE FROM Clientes WHERE id_Cliente = ?",
-        //     [id]
-        // );
-        
-        // NOVO Supabase:
-        // Primeiro verifica se existe
-        const { data: clienteExistente, error: checkError } = await supabase
-            .from("clientes")
-            .select("id_cliente")
-            .eq("id_cliente", id)
-            .single();
+    const { data: clienteExistente, error: checkError } = await supabase
+      .from("clientes")
+      .select("id_cliente")
+      .eq("id_cliente", id)
+      .maybeSingle();
 
-        if (checkError || !clienteExistente) {
-            return res.status(404).json({ error: "Cliente não encontrado" });
-        }
-
-        // Deleta
-        const { error } = await supabase
-            .from("clientes")
-            .delete()
-            .eq("id_cliente", id);
-
-        if (error) throw error;
-
-        // MESMA MENSAGEM!
-        res.json({ message: "Cliente deletado com sucesso!" });
-        
-    } catch (error) {
-        console.error("ERRO AO DELETAR CLIENTE:", error);
-        
-        // Se for erro de foreign key (cliente tem agendamentos)
-        if (error.code === '23503') {
-            return res.status(400).json({ 
-                error: "Não é possível excluir cliente com agendamentos ativos" 
-            });
-        }
-        
-        res.status(500).json({ error: error.message });
+    if (checkError || !clienteExistente) {
+      return res.status(404).json({ error: "Cliente não encontrado" });
     }
+
+    const { error } = await supabase
+      .from("clientes")
+      .delete()
+      .eq("id_cliente", id);
+
+    if (error) throw error;
+
+    res.json({ message: "Cliente deletado com sucesso!" });
+
+  } catch (error) {
+    console.error("ERRO AO DELETAR CLIENTE:", error);
+
+    if (error.code === '23503') {
+      return res.status(400).json({
+        error: "Não é possível excluir cliente com agendamentos ativos"
+      });
+    }
+
+    res.status(500).json({ error: "Erro ao deletar cliente" });
+  }
 });
+
 
 // GET CLIENTE POR ID (ADICIONAL - útil para edição)
 router.get("/clientes/:id", async (req, res) => {
