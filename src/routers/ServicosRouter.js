@@ -133,45 +133,46 @@ router.put("/services/:id", async (req, res) => {
         const { id } = req.params;
         const { nome, descricao, preco, duracao_minutos, categoria, popular } = req.body;
 
-        // Validação
-        if (!nome || !descricao || !preco || !duracao_minutos || !categoria) {
-            return res.status(400).json({ 
-                error: "Nome, descrição, preço, duração e categoria são obrigatórios" 
+        // Validação correta
+        if (
+            !nome?.trim() ||
+            !descricao?.trim() ||
+            preco === undefined ||
+            duracao_minutos === undefined ||
+            !categoria
+        ) {
+            return res.status(400).json({
+                error: "Todos os campos obrigatórios devem ser preenchidos"
             });
         }
 
-        // ANTIGO MySQL:
-        // await bd.execute(
-        //     `UPDATE Servicos 
-        //      SET nome = ?, descricao = ?, preco = ?, duracao_minutos = ?, categoria = ?, popular = ?
-        //      WHERE id = ?`,
-        //     [nome, descricao, preco, duracao_minutos, categoria, popular, id]
-        // );
-        
-        // NOVO Supabase:
+        const categoriasValidas = ['cabelo', 'unhas', 'estetica'];
+        if (!categoriasValidas.includes(categoria)) {
+            return res.status(400).json({
+                error: `Categoria inválida. Use: ${categoriasValidas.join(', ')}`
+            });
+        }
+
         const { data, error } = await supabase
             .from("servicos")
             .update({
                 nome: nome.trim(),
                 descricao: descricao.trim(),
-                preco: parseFloat(preco),
-                duracao_minutos: parseInt(duracao_minutos),
-                categoria: categoria,
-                popular: popular ? true : false,
+                preco: Number(preco),
+                duracao_minutos: Number(duracao_minutos),
+                categoria,
+                popular: Boolean(popular),
                 updated_at: new Date().toISOString()
             })
             .eq("id", id)
             .select()
             .single();
 
-        if (error) throw error;
-
-        if (!data) {
+        if (error || !data) {
             return res.status(404).json({ error: "Serviço não encontrado" });
         }
 
-        // MESMA MENSAGEM!
-        res.json({ 
+        res.json({
             message: "Serviço atualizado com sucesso!",
             servico: data
         });
