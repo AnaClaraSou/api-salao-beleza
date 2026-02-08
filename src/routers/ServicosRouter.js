@@ -60,7 +60,11 @@ router.get("/services", async (req, res) => {
 // GET - Buscar serviço por ID (GENÉRICA – SEMPRE POR ÚLTIMO)
 router.get("/services/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+        }
 
         const { data, error } = await supabase
             .from("servicos")
@@ -124,62 +128,64 @@ router.post("/services", async (req, res) => {
 
 // PUT - Atualizar serviço
 router.put("/services/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { nome, descricao, preco, duracao_minutos, categoria, popular } = req.body;
+  try {
+    const id = Number(req.params.id);
 
-        if (
-            !nome?.trim() ||
-            !descricao?.trim() ||
-            preco === undefined ||
-            duracao_minutos === undefined ||
-            !categoria
-        ) {
-            return res.status(400).json({
-                error: "Todos os campos obrigatórios devem ser preenchidos"
-            });
-        }
-
-        const categoriasValidas = ['cabelo', 'unhas', 'estetica'];
-        if (!categoriasValidas.includes(categoria)) {
-            return res.status(400).json({
-                error: `Categoria inválida. Use: ${categoriasValidas.join(', ')}`
-            });
-        }
-
-        const { data, error } = await supabase
-            .from("servicos")
-            .update({
-                nome: nome.trim(),
-                descricao: descricao.trim(),
-                preco: Number(preco),
-                duracao_minutos: Number(duracao_minutos),
-                categoria,
-                popular: Boolean(popular),
-                updated_at: new Date().toISOString()
-            })
-            .eq("id", id)
-            .select()
-            .single();
-
-        if (error || !data) {
-            return res.status(404).json({ error: "Serviço não encontrado" });
-        }
-
-        res.json({
-            message: "Serviço atualizado com sucesso!",
-            servico: data
-        });
-    } catch (error) {
-        console.error("Erro ao atualizar serviço:", error);
-        res.status(500).json({ error: "Erro ao atualizar o serviço" });
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "ID inválido" });
     }
+
+    const { nome, descricao, preco, duracao_minutos, categoria, popular } = req.body;
+
+    if (
+      !nome?.trim() ||
+      !descricao?.trim() ||
+      preco === undefined ||
+      duracao_minutos === undefined ||
+      !categoria
+    ) {
+      return res.status(400).json({
+        error: "Todos os campos obrigatórios devem ser preenchidos"
+      });
+    }
+
+    const { data, error } = await supabase
+      .from("servicos")
+      .update({
+        nome: nome.trim(),
+        descricao: descricao.trim(),
+        preco: Number(preco),
+        duracao_minutos: Number(duracao_minutos),
+        categoria,
+        popular: Boolean(popular)
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: "Serviço não encontrado" });
+    }
+
+    res.json({
+      message: "Serviço atualizado com sucesso!",
+      servico: data
+    });
+
+  } catch (error) {
+    console.error("Erro ao atualizar serviço:", error);
+    res.status(500).json({ error: "Erro ao atualizar o serviço" });
+  }
 });
 
 // DELETE - Deletar serviço
 router.delete("/services/:id", async (req, res) => {
     try {
-        const { id } = req.params;
+        const id = Number(req.params.id);
+
+        if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+        }
 
         const { data: servicoExistente } = await supabase
             .from("servicos")
